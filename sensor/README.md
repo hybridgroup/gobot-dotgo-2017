@@ -29,7 +29,7 @@ The Gobot program will use the serial interface to communicate with the connecte
 
 ### step0.go - Built-in LED
 
-![Gobot](../../images/sensor/arduino/step0.jpg)
+![Gobot](../images/sensor/arduino/step0.jpg)
 
 This tests that the Arduino is connected correctly to your computer, by blinking the built-in LED.
 
@@ -39,7 +39,7 @@ $ go run sensor/step0/main.go /dev/ttyACM0
 
 ### step1.go - Blue LED
 
-![Gobot](../../images/sensor/arduino/step1.jpg)
+![Gobot](../images/sensor/arduino/step1.jpg)
 
 Plug-in the Grove Shield to the top of the Arduino. Be careful not to bend the pins.
 
@@ -55,7 +55,7 @@ You should see the blue LED blink.
 
 ### step2.go - Blue LED, Button
 
-![Gobot](../../images/sensor/arduino/step2.jpg)
+![Gobot](../images/sensor/arduino/step2.jpg)
 
 Connect the button to D2.
 
@@ -69,7 +69,7 @@ When you press the button, the blue LED should turn on. When you release the but
 
 ### step3.go - Blue LED, Button, Green LED
 
-![Gobot](../../images/sensor/arduino/step3.jpg)
+![Gobot](../images/sensor/arduino/step3.jpg)
 
 Connect the Green LED to D4.
 
@@ -97,7 +97,7 @@ $ go run sensor/step04/main.go /dev/ttyACM0 tcp://192.168.1.55:1883
 
 ### step5.go - Blue LED, Button, Green LED, MQTT, Buzzer, Touch
 
-![Gobot](../../images/sensor/arduino/step5.jpg)
+![Gobot](../images/sensor/arduino/step5.jpg)
 
 Connect the buzzer to D6, and connect the touch sensor to D8.
 
@@ -111,7 +111,7 @@ When your finger touches the capacitive touch sensor, the buzzer should sound.
 
 ### step6.go - Blue LED, Button, Green LED, MQTT, Buzzer, Touch, Dial
 
-![Gobot](../../images/sensor/arduino/step6.jpg)
+![Gobot](../images/sensor/arduino/step6.jpg)
 
 Connect the rotary dial to A0.
 
@@ -125,7 +125,7 @@ Turning the dial will display the current analog reading on your console.
 
 ### step7.go - Blue LED, Button, Green LED, MQTT, Buzzer, Touch, Dial, Temperature, Red LED
 
-![Gobot](../../images/sensor/arduino/step7.jpg)
+![Gobot](../images/sensor/arduino/step7.jpg)
 
 Connect the temperature sensor to A1, and the red LED to D5
 
@@ -144,7 +144,7 @@ To turn the LED off, let go of the temperature sensor (note: the temperature wil
 
 ### step8.go - Blue LED, Button, Green LED, MQTT, Buzzer, Touch, Dial, Temperature, Red LED, Sound
 
-![Gobot](../../images/sensor/arduino/step8.jpg)
+![Gobot](../images/sensor/arduino/step8.jpg)
 
 Connect the sound sensor to A2.
 
@@ -158,7 +158,7 @@ When a sound is detected, the blue LED will light up, the sound sensor reading w
 
 ### step9.go - Blue LED, Button, Green LED, MQTT, Buzzer, Touch, Dial, Temperature, Red LED, Sound
 
-![Gobot](../../images/sensor/arduino/step8.jpg)
+![Gobot](../images/sensor/arduino/step8.jpg)
 
 This step has us sending our temperature reading to the "base station" using the MQTT machine to machine messaging protocol. No additional hardware needs to be connected.
 
@@ -172,7 +172,7 @@ Whenever there is a temperature reading taken, the data will be sent to the serv
 
 ### step10.go - Blue LED, Button, Green LED, MQTT, Buzzer, Touch, Dial, Temperature, Red LED, Sound, LCD
 
-![Gobot](../../images/sensor/arduino/step10.jpg)
+![Gobot](../images/sensor/arduino/step10.jpg)
 
 Connect the LCD to any of the I2C ports on the Grove shield.
 
