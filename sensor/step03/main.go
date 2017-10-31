@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"gobot.io/x/gobot"
 	"gobot.io/x/gobot/drivers/gpio"
@@ -14,14 +15,13 @@ var blue *gpio.GroveLedDriver
 var green *gpio.GroveLedDriver
 
 func TurnOff() {
-	blue.Off()
 	green.Off()
+	blue.Off()
 }
 
 func Reset() {
 	TurnOff()
-	fmt.Println("Airlock ready.")
-	green.On()
+	fmt.Println("Sensors ready.")
 }
 
 func main() {
@@ -43,9 +43,13 @@ func main() {
 		button.On(gpio.ButtonRelease, func(data interface{}) {
 			Reset()
 		})
+
+		gobot.Every(1*time.Second, func() {
+			green.Toggle()
+		})
 	}
 
-	robot := gobot.NewRobot("airlock",
+	robot := gobot.NewRobot("sensorStation",
 		[]gobot.Connection{board},
 		[]gobot.Device{button, blue, green},
 		work,

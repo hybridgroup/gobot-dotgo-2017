@@ -5,9 +5,9 @@ import (
 	"os"
 
 	"gobot.io/x/gobot"
-	"gobot.io/x/gobot/api"
 	"gobot.io/x/gobot/drivers/gpio"
 	"gobot.io/x/gobot/platforms/firmata"
+	"gobot.io/x/gobot/platforms/mqtt"
 )
 
 var button *gpio.GroveButtonDriver
@@ -21,21 +21,21 @@ func TurnOff() {
 
 func Reset() {
 	TurnOff()
-	fmt.Println("Airlock ready.")
+	fmt.Println("Sensor ready.")
 	green.On()
 }
 
 func main() {
-	master := gobot.NewMaster()
-
-	a := api.NewAPI(master)
-	a.Start()
-
 	board := firmata.NewAdaptor(os.Args[1])
 
 	button = gpio.NewGroveButtonDriver(board, "2")
 	blue = gpio.NewGroveLedDriver(board, "3")
 	green = gpio.NewGroveLedDriver(board, "4")
+
+	mqttAdaptor := mqtt.NewAdaptor(os.Args[2], "sensor")
+	mqttAdaptor.SetAutoReconnect(true)
+
+	heartbeat := mqtt.NewDriver(mqttAdaptor, "basestation/heartbeat")
 
 	work := func() {
 		Reset()
@@ -43,21 +43,23 @@ func main() {
 		button.On(gpio.ButtonPush, func(data interface{}) {
 			TurnOff()
 			fmt.Println("On!")
-			blue.On()
 		})
 
 		button.On(gpio.ButtonRelease, func(data interface{}) {
 			Reset()
 		})
+
+		heartbeat.On(mqtt.Data, func(data interface{}) {
+			fmt.Println("heartbeat")
+			blue.Toggle()
+		})
 	}
 
-	robot := gobot.NewRobot("airlock",
-		[]gobot.Connection{board},
-		[]gobot.Device{button, blue, green},
+	robot := gobot.NewRobot("sensorStation",
+		[]gobot.Connection{board, mqttAdaptor},
+		[]gobot.Device{button, blue, green, heartbeat},
 		work,
 	)
 
-	master.AddRobot(robot)
-
-	master.Start()
+	robot.Start()
 }

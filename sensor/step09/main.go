@@ -1,17 +1,27 @@
 package main
 
 import (
+	"bytes"
+	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"os"
 	"time"
 
 	"gobot.io/x/gobot"
-	"gobot.io/x/gobot/api"
 	"gobot.io/x/gobot/drivers/aio"
 	"gobot.io/x/gobot/drivers/gpio"
 	"gobot.io/x/gobot/platforms/firmata"
+	"gobot.io/x/gobot/platforms/mqtt"
 )
 
+const (
+	AlarmTemperature = 30.0
+	SoundThreshold   = 600
+)
+
+var robot *gobot.Robot
+var mqttAdaptor *mqtt.Adaptor
 var button *gpio.GroveButtonDriver
 var blue *gpio.GroveLedDriver
 var green *gpio.GroveLedDriver
@@ -20,22 +30,18 @@ var buzzer *gpio.GroveBuzzerDriver
 var touch *gpio.GroveTouchDriver
 var rotary *aio.GroveRotaryDriver
 var sensor *aio.GroveTemperatureSensorDriver
-var sound *aio.GroveSoundSensorDriver
-var light *aio.GroveLightSensorDriver
+var sound *aio.AnalogSensorDriver
 
-func DetectSound(level int) {
-	if level >= 400 {
-		fmt.Println("Sound detected")
-		TurnOff()
-		blue.On()
-		time.Sleep(1 * time.Second)
-		Reset()
-	}
+func ReportTemperature(temp float64) {
+	buf := new(bytes.Buffer)
+	msg, _ := json.Marshal(temp)
+	binary.Write(buf, binary.LittleEndian, msg)
+	mqttAdaptor.Publish("sensors/"+robot.Name+"/temperature", buf.Bytes())
 }
 
-func DetectLight(level int) {
-	if level >= 400 {
-		fmt.Println("Light detected")
+func DetectSound(level int) {
+	if level >= SoundThreshold {
+		fmt.Println("Sound detected:", level)
 		TurnOff()
 		blue.On()
 		time.Sleep(1 * time.Second)
@@ -46,38 +52,36 @@ func DetectLight(level int) {
 func CheckFireAlarm() {
 	temp := sensor.Temperature()
 	fmt.Println("Current temperature:", temp)
-	if temp >= 40 {
+	ReportTemperature(temp)
+	if temp >= AlarmTemperature {
 		TurnOff()
 		red.On()
 		buzzer.Tone(gpio.F4, gpio.Half)
+		return
 	}
+	red.Off()
 }
 
-func Doorbell() {
+func Alert() {
 	TurnOff()
-	blue.On()
-	buzzer.Tone(gpio.C4, gpio.Quarter)
-	<-time.After(1 * time.Second)
+	buzzer.Tone(gpio.C4, gpio.Half)
+	time.Sleep(1 * time.Second)
 	Reset()
 }
 
 func TurnOff() {
-	blue.Off()
 	green.Off()
+	blue.Off()
+	red.Off()
 }
 
 func Reset() {
 	TurnOff()
-	fmt.Println("Airlock ready.")
+	fmt.Println("Sensors ready.")
 	green.On()
 }
 
 func main() {
-	master := gobot.NewMaster()
-
-	a := api.NewAPI(master)
-	a.Start()
-
 	board := firmata.NewAdaptor(os.Args[1])
 
 	// digital
@@ -91,8 +95,13 @@ func main() {
 	// analog
 	rotary = aio.NewGroveRotaryDriver(board, "0")
 	sensor = aio.NewGroveTemperatureSensorDriver(board, "1")
-	sound = aio.NewGroveSoundSensorDriver(board, "2")
-	light = aio.NewGroveLightSensorDriver(board, "3")
+	sound = aio.NewAnalogSensorDriver(board, "2")
+
+	// mqtt
+	mqttAdaptor = mqtt.NewAdaptor(os.Args[2], "sensor")
+	mqttAdaptor.SetAutoReconnect(true)
+
+	heartbeat := mqtt.NewDriver(mqttAdaptor, "basestation/heartbeat")
 
 	work := func() {
 		Reset()
@@ -100,15 +109,19 @@ func main() {
 		button.On(gpio.ButtonPush, func(data interface{}) {
 			TurnOff()
 			fmt.Println("On!")
-			blue.On()
 		})
 
 		button.On(gpio.ButtonRelease, func(data interface{}) {
 			Reset()
 		})
 
+		heartbeat.On(mqtt.Data, func(data interface{}) {
+			fmt.Println("heartbeat")
+			blue.Toggle()
+		})
+
 		touch.On(gpio.ButtonPush, func(data interface{}) {
-			Doorbell()
+			Alert()
 		})
 
 		rotary.On(aio.Data, func(data interface{}) {
@@ -122,22 +135,16 @@ func main() {
 			DetectSound(data.(int))
 		})
 
-		light.On(aio.Data, func(data interface{}) {
-			DetectLight(data.(int))
-		})
-
 		gobot.Every(1*time.Second, func() {
 			CheckFireAlarm()
 		})
 	}
 
-	robot := gobot.NewRobot("airlock",
-		[]gobot.Connection{board},
-		[]gobot.Device{button, blue, green, red, buzzer, touch, rotary, sensor, sound, light},
+	robot = gobot.NewRobot(fmt.Sprintf("sensorStation-%d", gobot.Rand(1000)),
+		[]gobot.Connection{board, mqttAdaptor},
+		[]gobot.Device{button, blue, green, red, heartbeat, buzzer, touch, rotary, sensor, sound},
 		work,
 	)
 
-	master.AddRobot(robot)
-
-	master.Start()
+	robot.Start()
 }

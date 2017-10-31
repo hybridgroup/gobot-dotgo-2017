@@ -6,11 +6,13 @@ import (
 	"time"
 
 	"gobot.io/x/gobot"
-	"gobot.io/x/gobot/api"
 	"gobot.io/x/gobot/drivers/aio"
 	"gobot.io/x/gobot/drivers/gpio"
 	"gobot.io/x/gobot/platforms/firmata"
+	"gobot.io/x/gobot/platforms/mqtt"
 )
+
+const AlarmTemperature = 30.0
 
 var button *gpio.GroveButtonDriver
 var blue *gpio.GroveLedDriver
@@ -24,38 +26,35 @@ var sensor *aio.GroveTemperatureSensorDriver
 func CheckFireAlarm() {
 	temp := sensor.Temperature()
 	fmt.Println("Current temperature:", temp)
-	if temp >= 15 {
+	if temp >= AlarmTemperature {
 		TurnOff()
 		red.On()
 		buzzer.Tone(gpio.F4, gpio.Half)
+		return
 	}
+	red.Off()
 }
 
-func Doorbell() {
+func Alert() {
 	TurnOff()
-	blue.On()
-	buzzer.Tone(gpio.C4, gpio.Quarter)
+	buzzer.Tone(gpio.C4, gpio.Half)
 	time.Sleep(1 * time.Second)
 	Reset()
 }
 
 func TurnOff() {
-	blue.Off()
 	green.Off()
+	blue.Off()
+	red.Off()
 }
 
 func Reset() {
 	TurnOff()
-	fmt.Println("Airlock ready.")
+	fmt.Println("Sensors ready.")
 	green.On()
 }
 
 func main() {
-	master := gobot.NewMaster()
-
-	a := api.NewAPI(master)
-	a.Start()
-
 	board := firmata.NewAdaptor(os.Args[1])
 
 	// digital
@@ -70,21 +69,38 @@ func main() {
 	rotary = aio.NewGroveRotaryDriver(board, "0")
 	sensor = aio.NewGroveTemperatureSensorDriver(board, "1")
 
+	// mqtt
+	mqttAdaptor := mqtt.NewAdaptor(os.Args[2], "sensor")
+	mqttAdaptor.SetAutoReconnect(true)
+
+	heartbeat := mqtt.NewDriver(mqttAdaptor, "basestation/heartbeat")
+
 	work := func() {
 		Reset()
 
 		button.On(gpio.ButtonPush, func(data interface{}) {
 			TurnOff()
 			fmt.Println("On!")
-			blue.On()
 		})
 
 		button.On(gpio.ButtonRelease, func(data interface{}) {
 			Reset()
 		})
 
+		heartbeat.On(mqtt.Data, func(data interface{}) {
+			fmt.Println("heartbeat")
+			blue.Toggle()
+		})
+
 		touch.On(gpio.ButtonPush, func(data interface{}) {
-			Doorbell()
+			Alert()
+		})
+
+		rotary.On(aio.Data, func(data interface{}) {
+			b := uint8(
+				gobot.ToScale(gobot.FromScale(float64(data.(int)), 0, 4096), 0, 255),
+			)
+			blue.Brightness(b)
 		})
 
 		gobot.Every(1*time.Second, func() {
@@ -92,13 +108,11 @@ func main() {
 		})
 	}
 
-	robot := gobot.NewRobot("airlock",
-		[]gobot.Connection{board},
-		[]gobot.Device{button, blue, green, red, buzzer, touch, rotary, sensor},
+	robot := gobot.NewRobot("sensorStation",
+		[]gobot.Connection{board, mqttAdaptor},
+		[]gobot.Device{button, blue, green, red, heartbeat, buzzer, touch, rotary, sensor},
 		work,
 	)
 
-	master.AddRobot(robot)
-
-	master.Start()
+	robot.Start()
 }

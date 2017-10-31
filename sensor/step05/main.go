@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"gobot.io/x/gobot"
-	"gobot.io/x/gobot/api"
 	"gobot.io/x/gobot/drivers/gpio"
 	"gobot.io/x/gobot/platforms/firmata"
+	"gobot.io/x/gobot/platforms/mqtt"
 )
 
 var button *gpio.GroveButtonDriver
@@ -17,31 +17,25 @@ var green *gpio.GroveLedDriver
 var buzzer *gpio.GroveBuzzerDriver
 var touch *gpio.GroveTouchDriver
 
-func Doorbell() {
+func Alert() {
 	TurnOff()
-	blue.On()
 	buzzer.Tone(gpio.C4, gpio.Half)
 	time.Sleep(1 * time.Second)
 	Reset()
 }
 
 func TurnOff() {
-	blue.Off()
 	green.Off()
+	blue.Off()
 }
 
 func Reset() {
 	TurnOff()
-	fmt.Println("Airlock ready.")
+	fmt.Println("Sensors ready.")
 	green.On()
 }
 
 func main() {
-	master := gobot.NewMaster()
-
-	a := api.NewAPI(master)
-	a.Start()
-
 	board := firmata.NewAdaptor(os.Args[1])
 
 	button = gpio.NewGroveButtonDriver(board, "2")
@@ -50,31 +44,38 @@ func main() {
 	buzzer = gpio.NewGroveBuzzerDriver(board, "6")
 	touch = gpio.NewGroveTouchDriver(board, "8")
 
+	mqttAdaptor := mqtt.NewAdaptor(os.Args[2], "sensor")
+	mqttAdaptor.SetAutoReconnect(true)
+
+	heartbeat := mqtt.NewDriver(mqttAdaptor, "basestation/heartbeat")
+
 	work := func() {
 		Reset()
 
 		button.On(gpio.ButtonPush, func(data interface{}) {
 			TurnOff()
 			fmt.Println("On!")
-			blue.On()
 		})
 
 		button.On(gpio.ButtonRelease, func(data interface{}) {
 			Reset()
 		})
 
+		heartbeat.On(mqtt.Data, func(data interface{}) {
+			fmt.Println("heartbeat")
+			blue.Toggle()
+		})
+
 		touch.On(gpio.ButtonPush, func(data interface{}) {
-			Doorbell()
+			Alert()
 		})
 	}
 
-	robot := gobot.NewRobot("airlock",
-		[]gobot.Connection{board},
-		[]gobot.Device{button, blue, green, buzzer, touch},
+	robot := gobot.NewRobot("sensorStation",
+		[]gobot.Connection{board, mqttAdaptor},
+		[]gobot.Device{button, blue, green, heartbeat, buzzer, touch},
 		work,
 	)
 
-	master.AddRobot(robot)
-
-	master.Start()
+	robot.Start()
 }
