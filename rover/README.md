@@ -38,7 +38,12 @@ $ sudo ./step01 BB-123E
 
 ### step01/main.go
 
-Change colors of the built-in LED.
+This tests that the Sphero SPRK+ or Ollie is connected correctly to your computer, by blinking the built-in LED.
+
+```
+$ go run rover/step0/main.go /dev/ttyACM0
+```
+
 
 ### step02/main.go
 
@@ -46,19 +51,19 @@ Rolls around at random.
 
 ### step03/main.go
 
-Gets collision notifications from robot.
+*Gets collision notifications from robot.
 
 ### step04/main.go
 
-Receive heartbeat data from base station.
+*Receive heartbeat data from base station.
 
 ### step05/main.go
 
-Control robot using joystick.
+*Control robot using joystick.
 
 ### step06/main.go
 
-Control robot using joystick to collect data and send to base station.
+*Control robot using joystick to collect data and send to base station.
 
 ## License
 
