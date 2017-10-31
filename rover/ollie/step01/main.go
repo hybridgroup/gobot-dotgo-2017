@@ -20,13 +20,9 @@ func main() {
 			b := uint8(gobot.Rand(255))
 			rover.SetRGB(r, g, b)
 		})
-
-		gobot.Every(3*time.Second, func() {
-			rover.Roll(40, uint16(gobot.Rand(360)))
-		})
 	}
 
-	robot := gobot.NewRobot("ollieBot",
+	robot := gobot.NewRobot("rover",
 		[]gobot.Connection{bleAdaptor},
 		[]gobot.Device{rover},
 		work,

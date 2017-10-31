@@ -6,12 +6,12 @@ import (
 
 	"gobot.io/x/gobot"
 	"gobot.io/x/gobot/platforms/ble"
-	"gobot.io/x/gobot/platforms/sphero/ollie"
+	"gobot.io/x/gobot/platforms/sphero/sprkplus"
 )
 
 func main() {
 	bleAdaptor := ble.NewClientAdaptor(os.Args[1])
-	rover := ollie.NewDriver(bleAdaptor)
+	rover := sprkplus.NewDriver(bleAdaptor)
 
 	work := func() {
 		gobot.Every(1*time.Second, func() {
@@ -26,7 +26,7 @@ func main() {
 		})
 	}
 
-	robot := gobot.NewRobot("ollieBot",
+	robot := gobot.NewRobot("rover",
 		[]gobot.Connection{bleAdaptor},
 		[]gobot.Device{rover},
 		work,
