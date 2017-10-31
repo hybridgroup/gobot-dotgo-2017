@@ -158,8 +158,6 @@ When a sound is detected, the blue LED will light up, the sound sensor reading w
 
 ### step9.go - Blue LED, Button, Green LED, MQTT, Buzzer, Touch, Dial, Temperature, Red LED, Sound
 
-![Gobot](../images/sensor/arduino/step8.jpg)
-
 This step has us sending our temperature reading to the "base station" using the MQTT machine to machine messaging protocol. No additional hardware needs to be connected.
 
 Run the code:
