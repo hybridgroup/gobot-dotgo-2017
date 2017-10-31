@@ -8,7 +8,7 @@ This activity uses an Arduino along with the Intel Grove Starter Kit to create a
 
 ## Rover
 
-This activity uses a Sphero SPRK+ or Sphero Ollie as part of a remote rover system to explore the planet's surface, and to return data.
+This activity uses a Sphero SPRK+ or Sphero Ollie as part of a remote rover system to explore the planet's surface, and to return data back to the base station.
 
 ## Drone
 
