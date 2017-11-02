@@ -19,39 +19,48 @@ func main() {
 			fmt.Printf("battery: %d\n", data)
 		})
 
-		drone.On(drone.Event("status"), func(data interface{}) {
-			fmt.Printf("status: %d\n", data)
+		drone.On(minidrone.Hovering, func(data interface{}) {
+			fmt.Println("hovering!")
 		})
 
-		drone.On(drone.Event("flying"), func(data interface{}) {
-			fmt.Println("flying!")
-			gobot.After(5*time.Second, func() {
-				fmt.Println("forwards...")
-				drone.Forward(10)
-			})
-			gobot.After(10*time.Second, func() {
-				fmt.Println("backwards...")
-				drone.Backward(10)
-			})
-			gobot.After(15*time.Second, func() {
-				fmt.Println("right...")
-				drone.Right(10)
-			})
-			gobot.After(20*time.Second, func() {
-				fmt.Println("left...")
-				drone.Left(10)
-			})
-			gobot.After(25*time.Second, func() {
-				fmt.Println("landing...")
-				drone.Land()
-			})
+		drone.On(minidrone.Landing, func(data interface{}) {
+			fmt.Println("landing!")
 		})
 
-		drone.On(drone.Event("landed"), func(data interface{}) {
+		drone.On(minidrone.Landed, func(data interface{}) {
 			fmt.Println("landed.")
 		})
 
 		drone.TakeOff()
+		gobot.After(10*time.Second, func() {
+			fmt.Println("forwards...")
+			drone.Forward(5)
+		})
+		gobot.After(12*time.Second, func() {
+			fmt.Println("backwards...")
+			drone.Backward(10)
+		})
+		gobot.After(14*time.Second, func() {
+			fmt.Println("hovering...")
+			drone.Stop()
+		})
+
+		gobot.After(20*time.Second, func() {
+			fmt.Println("right...")
+			drone.Right(5)
+		})
+		gobot.After(22*time.Second, func() {
+			fmt.Println("left...")
+			drone.Left(10)
+		})
+		gobot.After(24*time.Second, func() {
+			fmt.Println("hovering...")
+			drone.Stop()
+		})
+		gobot.After(30*time.Second, func() {
+			fmt.Println("landing...")
+			drone.Land()
+		})
 	}
 
 	robot := gobot.NewRobot("minidrone",

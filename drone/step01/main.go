@@ -16,8 +16,8 @@ func main() {
 
 	work := func() {
 		fmt.Println("takeoff...")
-		drone.TakeOff()
 
+		drone.TakeOff()
 		gobot.After(10*time.Second, func() {
 			fmt.Println("landing...")
 			drone.Land()

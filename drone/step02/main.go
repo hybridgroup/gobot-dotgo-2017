@@ -19,23 +19,22 @@ func main() {
 			fmt.Printf("battery: %d\n", data)
 		})
 
-		drone.On(drone.Event("status"), func(data interface{}) {
-			fmt.Printf("status: %d\n", data)
+		drone.On(minidrone.Hovering, func(data interface{}) {
+			fmt.Println("hovering!")
 		})
 
-		drone.On(drone.Event("flying"), func(data interface{}) {
-			fmt.Println("flying!")
-			gobot.After(10*time.Second, func() {
-				fmt.Println("landing...")
-				drone.Land()
-			})
+		drone.On(minidrone.Landing, func(data interface{}) {
+			fmt.Println("landing!")
 		})
 
-		drone.On(drone.Event("landed"), func(data interface{}) {
+		drone.On(minidrone.Landed, func(data interface{}) {
 			fmt.Println("landed.")
 		})
 
 		drone.TakeOff()
+		gobot.After(10*time.Second, func() {
+			drone.Land()
+		})
 	}
 
 	robot := gobot.NewRobot("minidrone",

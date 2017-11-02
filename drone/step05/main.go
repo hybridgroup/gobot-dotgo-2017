@@ -1,7 +1,7 @@
 package main
 
 import (
-	"math"
+	"fmt"
 	"os"
 	"time"
 
@@ -17,8 +17,7 @@ type pair struct {
 }
 
 func main() {
-	pwd, _ := os.Getwd()
-	joystickConfig := pwd + "/dualshock3.json"
+	joystickConfig := os.Args[2]
 
 	joystickAdaptor := joystick.NewAdaptor()
 	joystick := joystick.NewDriver(joystickAdaptor,
@@ -70,17 +69,17 @@ func main() {
 		gobot.Every(10*time.Millisecond, func() {
 			pair := rightStick
 			if pair.y < -10 {
-				drone.Forward(validatePitch(pair.y, offset))
+				drone.Forward(minidrone.ValidatePitch(pair.y, offset))
 			} else if pair.y > 10 {
-				drone.Backward(validatePitch(pair.y, offset))
+				drone.Backward(minidrone.ValidatePitch(pair.y, offset))
 			} else {
 				drone.Forward(0)
 			}
 
 			if pair.x > 10 {
-				drone.Right(validatePitch(pair.x, offset))
+				drone.Right(minidrone.ValidatePitch(pair.x, offset))
 			} else if pair.x < -10 {
-				drone.Left(validatePitch(pair.x, offset))
+				drone.Left(minidrone.ValidatePitch(pair.x, offset))
 			} else {
 				drone.Right(0)
 			}
@@ -89,20 +88,36 @@ func main() {
 		gobot.Every(10*time.Millisecond, func() {
 			pair := leftStick
 			if pair.y < -10 {
-				drone.Up(validatePitch(pair.y, offset))
+				drone.Up(minidrone.ValidatePitch(pair.y, offset))
 			} else if pair.y > 10 {
-				drone.Down(validatePitch(pair.y, offset))
+				drone.Down(minidrone.ValidatePitch(pair.y, offset))
 			} else {
 				drone.Up(0)
 			}
 
 			if pair.x > 20 {
-				drone.Clockwise(validatePitch(pair.x, offset))
+				drone.Clockwise(minidrone.ValidatePitch(pair.x, offset))
 			} else if pair.x < -20 {
-				drone.CounterClockwise(validatePitch(pair.x, offset))
+				drone.CounterClockwise(minidrone.ValidatePitch(pair.x, offset))
 			} else {
 				drone.Clockwise(0)
 			}
+		})
+
+		drone.On(drone.Event("battery"), func(data interface{}) {
+			fmt.Printf("battery: %d\n", data)
+		})
+
+		drone.On(minidrone.Hovering, func(data interface{}) {
+			fmt.Println("hovering!")
+		})
+
+		drone.On(minidrone.Landing, func(data interface{}) {
+			fmt.Println("landing!")
+		})
+
+		drone.On(minidrone.Landed, func(data interface{}) {
+			fmt.Println("landed.")
 		})
 	}
 
@@ -113,15 +128,4 @@ func main() {
 	)
 
 	robot.Start()
-}
-
-func validatePitch(data float64, offset float64) int {
-	value := math.Abs(data) / offset
-	if value >= 0.1 {
-		if value <= 1.0 {
-			return int((float64(int(value*100)) / 100) * 100)
-		}
-		return 100
-	}
-	return 0
 }
