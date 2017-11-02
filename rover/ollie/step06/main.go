@@ -39,6 +39,7 @@ func main() {
 		rover.On("collision", func(data interface{}) {
 			fmt.Printf("collision detected = %+v \n", data)
 			rover.SetRGB(255, 0, 0)
+			ReportCollision(data)
 		})
 
 		heartbeat.On(mqtt.Data, func(data interface{}) {

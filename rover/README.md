@@ -134,7 +134,7 @@ This step has us receiving a heartbeat signal from the "base station" using the 
 
 You will need the server location of the MQTT server to use for the base station.
 
-Now, when the heartbeat data is received from base station, the built-in LED with change color.
+When the heartbeat data is received from the base station, the built-in LED will change color.
 
 #### OS X
 
