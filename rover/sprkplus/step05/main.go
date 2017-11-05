@@ -55,7 +55,7 @@ func main() {
 	}
 
 	robot := gobot.NewRobot("rover",
-		[]gobot.Connection{bleAdaptor},
+		[]gobot.Connection{bleAdaptor, mqttAdaptor},
 		[]gobot.Device{rover, keys},
 		work,
 	)
