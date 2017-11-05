@@ -51,7 +51,7 @@ func main() {
 
 		heartbeat.On(mqtt.Data, func(data interface{}) {
 			fmt.Println("heartbeat")
-			blue.Toggle()
+			green.Toggle()
 		})
 	}
 
