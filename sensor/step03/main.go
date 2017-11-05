@@ -15,7 +15,6 @@ var blue *gpio.GroveLedDriver
 var green *gpio.GroveLedDriver
 
 func TurnOff() {
-	green.Off()
 	blue.Off()
 }
 
