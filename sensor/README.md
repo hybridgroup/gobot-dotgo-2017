@@ -16,7 +16,7 @@ When you run any of these examples, you will compile and execute the code on you
 To compile/run the code:
 
 ```
-$ go run sensor/step1/main.go /dev/ttyACM0
+$ go run sensor/step01/main.go /dev/ttyACM0
 ```
 
 If using Mac OS X then the Arduino will probably use a device name like `/dev/tty.usbmodem1421`. Perform a directory listing of `/dev/`; the Arduino is likely a device named using the pattern `/dev/tty.usbmodem`.
