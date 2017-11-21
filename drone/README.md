@@ -2,6 +2,13 @@
 
 The various Parrot Mindrones such as the Rolling Spider all use the same API.
 
+## What you need
+
+    - Parrot Minidrone
+    - Dualshock 3 gamepad, or compatible
+    - Personal computer with Go installed, and a Bluetooth 4.0 radio.
+    - Linux or OS X
+
 ## Installation
 
 ```

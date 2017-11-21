@@ -1,5 +1,11 @@
 # Sensor Station
 
+## What you need
+
+    - Arduino or compatible microcontroller
+    - Intel IoT Starter Kit
+    - Personal computer with Go installed, and a serial port.
+
 ## Installation
 
 ```

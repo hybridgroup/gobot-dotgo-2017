@@ -3,6 +3,12 @@
 The Sphero SPRK+ and Sphero Ollie, and Sphero BB-8 all use the same API. However,
 they have separate Gobot drivers to accommodate their other differences.
 
+## What you need
+
+    - Sphero Ollie, SPRK+, or BB-8
+    - Personal computer with Go installed, and a Bluetooth 4.0 radio.
+    - Linux or OS X
+
 ## Installation
 
 ```
